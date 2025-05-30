@@ -2,14 +2,22 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
-    MongooseModule.forRoot(
-      'mongodb://LyxaMicroservice_knifegraph:e63553be8e6142562187931fd2d5680f899c8c71@94-lz.h.filess.io:61004/LyxaMicroservice_knifegraph',
-    ),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule], // import ConfigModule here if not global
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('DATABASE_URL'),
+      }),
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true, // makes ConfigService available everywhere without importing again
+    }),
   ],
   controllers: [],
   providers: [],
