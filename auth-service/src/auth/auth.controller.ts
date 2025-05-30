@@ -23,7 +23,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() credentials: LoginDto): Promise<boolean> {
+  async login(@Body() credentials: LoginDto): Promise<UserEntity> {
     return await this.authService.login(credentials);
   }
 
