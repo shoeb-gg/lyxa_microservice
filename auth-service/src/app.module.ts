@@ -9,7 +9,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     AuthModule,
     UsersModule,
     MongooseModule.forRootAsync({
-      imports: [ConfigModule], // import ConfigModule here if not global
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('DATABASE_URL'),
