@@ -35,7 +35,7 @@ async function bootstrap() {
   app.use(helmet());
   await app.register(fastifyCsrf);
 
-  await app.listen(3000);
+  await app.listen(3002);
 
   if (module.hot) {
     module.hot.accept();
