@@ -3,9 +3,9 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { getModelToken } from '@nestjs/mongoose';
 import { Product } from './models/product.model';
-import { HydratedDocument, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { ProductEntity } from './entities/product.entity';
-import { ResponseDto } from 'src/common/dto/response.dto';
+import { FindManyResponseDto, ResponseDto } from 'src/common/dto/response.dto';
 
 @Injectable()
 export class ProductService {
@@ -18,14 +18,12 @@ export class ProductService {
     createProductDto: CreateProductDto,
   ): Promise<ResponseDto<ProductEntity>> {
     try {
-      const user: HydratedDocument<ProductEntity> = await new this.productModel(
-        {
-          ...createProductDto,
-        },
-      ).save();
+      const product: ProductEntity = await new this.productModel({
+        ...createProductDto,
+      }).save();
 
       return {
-        data: user,
+        data: product,
         success: true,
         message: 'Product Created Successfully!',
         status: HttpStatus.CREATED,
@@ -39,19 +37,114 @@ export class ProductService {
     }
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<FindManyResponseDto<ProductEntity[]>> {
+    try {
+      const skip = (pageNumber - 1) * pageSize;
+
+      const [products, total] = await Promise.all([
+        await this.productModel.find().skip(skip).limit(pageSize).lean().exec(),
+        this.productModel.countDocuments(),
+      ]);
+
+      return {
+        data: products,
+        total: total,
+        pagination: {
+          currentPage: pageNumber,
+          pageSize: pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+
+        success: true,
+        message: 'Products Fetched Successfully!',
+        status: products.length === 0 ? HttpStatus.NO_CONTENT : HttpStatus.OK,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Server Error while creating Product!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string): Promise<ResponseDto<ProductEntity | null>> {
+    try {
+      const product: ProductEntity | null = await this.productModel
+        .findOne({ _id: id })
+        .lean()
+        .exec();
+
+      return {
+        data: product ? product : null,
+        success: product ? true : false,
+        message: product
+          ? 'Product Fetched Successfully!'
+          : `No Product Found with id ${id}`,
+        status: product ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Server Error while fetching Product!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<ResponseDto<ProductEntity | null>> {
+    try {
+      const product: ProductEntity | null = await this.productModel
+        .findByIdAndUpdate(
+          id,
+          { $set: updateProductDto },
+          { new: true, runValidators: true },
+        )
+        .exec();
+
+      return {
+        data: product ? product : null,
+        success: product ? true : false,
+        message: product
+          ? 'Product updated Successfully!'
+          : `No Product Found with id ${id}`,
+        status: product ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Server Error while updating Product!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string): Promise<ResponseDto<null>> {
+    try {
+      const product: ProductEntity | null = await this.productModel
+        .findByIdAndDelete(id)
+        .exec();
+
+      return {
+        data: null,
+        success: product ? true : false,
+        message: product
+          ? 'Product deleted Successfully!'
+          : `No Product Found with id ${id}`,
+        status: product ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Server Error while deleting Product!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

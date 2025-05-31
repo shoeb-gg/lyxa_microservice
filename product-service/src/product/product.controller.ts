@@ -6,12 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductEntity } from './entities/product.entity';
-import { ResponseDto } from 'src/common/dto/response.dto';
+import { FindManyResponseDto, ResponseDto } from 'src/common/dto/response.dto';
 
 @Controller('product')
 export class ProductController {
@@ -24,23 +25,31 @@ export class ProductController {
     return await this.productService.create(createProductDto);
   }
 
-  @Get()
-  findAll() {
-    return this.productService.findAll();
+  @Get('all')
+  async findAll(
+    @Query('pageNumber') pageNumber: number,
+    @Query('pageSize') pageSize: number,
+  ): Promise<FindManyResponseDto<ProductEntity[]>> {
+    return await this.productService.findAll(+pageNumber, +pageSize);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<ResponseDto<ProductEntity | null>> {
+    return await this.productService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ): Promise<ResponseDto<ProductEntity | null>> {
+    return await this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  async remove(@Param('id') id: string): Promise<ResponseDto<null>> {
+    return await this.productService.remove(id);
   }
 }
