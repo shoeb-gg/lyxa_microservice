@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { LoginDto } from '../dto/login.dto';
@@ -8,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { ResponseDto } from 'libs/common/dto/response.dto';
 import { UserEntity } from '../entities/user.entity';
 import { AuthResponse } from '../dto/authResponse.dto';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -15,11 +21,15 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject('EVENT_SERVICE') private eventClient: ClientProxy,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<AuthResponse> {
     const user: UserEntity = await this.usersService.create(createUserDto);
     const { password, ...userInfo } = user;
+
+    this.eventClient.emit('user.created', { ...userInfo });
+
     return {
       access_token: this.jwtService.sign({ name: user.name, id: user._id }),
       ...userInfo,
