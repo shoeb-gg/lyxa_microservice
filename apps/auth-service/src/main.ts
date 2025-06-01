@@ -39,14 +39,14 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: ['amqp://localhost:5672'],
+      urls: ['amqp://guest:guest@rabbitmq:5672'],
       queue: 'auth_queue',
       queueOptions: { durable: false },
     },
   });
   await app.startAllMicroservices();
 
-  await app.listen(3001);
+  await app.listen(3001, '0.0.0.0');
 
   if (module.hot) {
     module.hot.accept();
