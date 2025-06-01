@@ -16,10 +16,12 @@ export class ProductService {
 
   async create(
     createProductDto: CreateProductDto,
+    user_id: string,
   ): Promise<ResponseDto<ProductEntity>> {
     try {
       const product: ProductEntity = await new this.productModel({
         ...createProductDto,
+        user_id,
       }).save();
 
       return {
@@ -98,9 +100,33 @@ export class ProductService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
+    user_id: string,
   ): Promise<ResponseDto<ProductEntity | null>> {
     try {
       const product: ProductEntity | null = await this.productModel
+        .findOne({ _id: id })
+        .lean()
+        .exec();
+
+      if (!product) {
+        return {
+          data: null,
+          success: false,
+          message: `No Product Found with id ${id}`,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      if (product.user_id.toString() !== user_id.toString()) {
+        return {
+          data: null,
+          success: false,
+          message: 'You are not allowed to update this product',
+          status: HttpStatus.METHOD_NOT_ALLOWED,
+        };
+      }
+
+      const updatedProduct = await this.productModel
         .findByIdAndUpdate(
           id,
           { $set: updateProductDto },
@@ -109,12 +135,12 @@ export class ProductService {
         .exec();
 
       return {
-        data: product ? product : null,
-        success: product ? true : false,
-        message: product
+        data: updatedProduct ? updatedProduct : null,
+        success: updatedProduct ? true : false,
+        message: updatedProduct
           ? 'Product updated Successfully!'
           : `No Product Found with id ${id}`,
-        status: product ? HttpStatus.OK : HttpStatus.NO_CONTENT,
+        status: updatedProduct ? HttpStatus.OK : HttpStatus.NO_CONTENT,
       };
     } catch (error) {
       console.error(error);
@@ -125,19 +151,42 @@ export class ProductService {
     }
   }
 
-  async remove(id: string): Promise<ResponseDto<null>> {
+  async remove(id: string, user_id: string): Promise<ResponseDto<null>> {
     try {
       const product: ProductEntity | null = await this.productModel
+        .findOne({ _id: id })
+        .lean()
+        .exec();
+
+      if (!product) {
+        return {
+          data: null,
+          success: false,
+          message: `No Product Found with id ${id}`,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      if (product.user_id.toString() !== user_id.toString()) {
+        return {
+          data: null,
+          success: false,
+          message: 'You are not allowed to delete this product',
+          status: HttpStatus.METHOD_NOT_ALLOWED,
+        };
+      }
+
+      const deletedProduct: ProductEntity | null = await this.productModel
         .findByIdAndDelete(id)
         .exec();
 
       return {
         data: null,
-        success: product ? true : false,
-        message: product
+        success: deletedProduct ? true : false,
+        message: deletedProduct
           ? 'Product deleted Successfully!'
           : `No Product Found with id ${id}`,
-        status: product ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
+        status: deletedProduct ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
       };
     } catch (error) {
       console.error(error);

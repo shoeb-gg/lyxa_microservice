@@ -14,6 +14,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductEntity } from './entities/product.entity';
 import { FindManyResponseDto, ResponseDto } from 'libs/common/dto/response.dto';
+import { UserID } from '@app/common/utils/user.decorator';
 
 @Controller('product')
 export class ProductController {
@@ -22,8 +23,9 @@ export class ProductController {
   @Post()
   async create(
     @Body() createProductDto: CreateProductDto,
+    @UserID() userID: string,
   ): Promise<ResponseDto<ProductEntity>> {
-    return await this.productService.create(createProductDto);
+    return await this.productService.create(createProductDto, userID);
   }
 
   @Get('all')
@@ -45,12 +47,16 @@ export class ProductController {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @UserID() userID: string,
   ): Promise<ResponseDto<ProductEntity | null>> {
-    return await this.productService.update(id, updateProductDto);
+    return await this.productService.update(id, updateProductDto, userID);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<ResponseDto<null>> {
-    return await this.productService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @UserID() userID: string,
+  ): Promise<ResponseDto<null>> {
+    return await this.productService.remove(id, userID);
   }
 }

@@ -12,4 +12,7 @@ export class Product {
 
   @prop()
   description?: string;
+
+  @prop({ required: true })
+  user_id: string;
 }
