@@ -6,4 +6,6 @@ export class ProductEntity {
   price: number;
 
   description?: string;
+
+  user_id: string;
 }
