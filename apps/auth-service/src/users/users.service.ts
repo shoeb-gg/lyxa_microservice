@@ -4,8 +4,8 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from '../models/user.model';
 import { Model } from 'mongoose';
-import { UserEntity } from 'src/entities/user.entity';
-import { LoginDto } from 'src/dto/login.dto';
+import { UserEntity } from '../entities/user.entity';
+import { LoginDto } from '../dto/login.dto';
 
 @Injectable()
 export class UsersService {
