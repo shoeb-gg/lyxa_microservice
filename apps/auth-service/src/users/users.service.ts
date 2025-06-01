@@ -16,7 +16,12 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     try {
-      return await this.userModel.create({ ...createUserDto });
+      const user = await this.userModel.create({ ...createUserDto });
+
+      return {
+        ...user.toObject(),
+        _id: user._id.toString(),
+      };
     } catch (error) {
       console.error(error);
       throw new HttpException(
@@ -28,7 +33,7 @@ export class UsersService {
 
   async findAndVerifyUser(credentials: LoginDto): Promise<UserEntity> {
     try {
-      const user: UserEntity | null = await this.userModel
+      const user = await this.userModel
         .findOne({
           email: credentials.email,
         })
@@ -38,8 +43,13 @@ export class UsersService {
         throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
       }
 
-      if (user.password === credentials.password) {
-        const { password, ...res } = user;
+      const formattedUser: UserEntity = {
+        ...user,
+        _id: user._id.toString(),
+      };
+
+      if (formattedUser.password === formattedUser.password) {
+        const { password, ...res } = formattedUser;
         return res;
       } else {
         throw new HttpException('Invalid password!', HttpStatus.BAD_REQUEST);
