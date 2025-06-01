@@ -7,12 +7,13 @@ import {
   Param,
   Delete,
   Query,
+  Inject,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductEntity } from './entities/product.entity';
-import { FindManyResponseDto, ResponseDto } from '../common/dto/response.dto';
+import { FindManyResponseDto, ResponseDto } from 'libs/common/dto/response.dto';
 
 @Controller('product')
 export class ProductController {

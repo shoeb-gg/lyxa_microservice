@@ -16,6 +16,20 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {}
+    "paths": {
+      "@app/common": [
+        "libs/common/src"
+      ],
+      "@app/common/*": [
+        "libs/common/src/*"
+      ],
+      "@app/product-manager": [
+        "libs/product-manager/src"
+      ],
+      "@app/product-manager/*": [
+        "libs/product-manager/src/*"
+      ]
+    },
+    "baseUrl": "./"
   }
 }
