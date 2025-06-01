@@ -12,6 +12,8 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { LoginDto } from '../dto/login.dto';
 import { UserEntity } from '../entities/user.entity';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { ResponseDto } from 'libs/common/dto/response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,17 +25,16 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() credentials: LoginDto): Promise<UserEntity> {
+  async login(
+    @Body() credentials: LoginDto,
+  ): Promise<{ access_token: string }> {
     return await this.authService.login(credentials);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateUserDto) {
-    return this.authService.update(+id, updateAuthDto);
+  @MessagePattern('auth.validate-token')
+  async validateToken(
+    @Payload() token: string,
+  ): Promise<ResponseDto<UserEntity>> {
+    return await this.authService.validateToken(token);
   }
 }
