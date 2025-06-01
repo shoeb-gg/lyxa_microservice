@@ -5,7 +5,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Product } from './models/product.model';
 import { Model } from 'mongoose';
 import { ProductEntity } from './entities/product.entity';
-import { FindManyResponseDto, ResponseDto } from 'src/common/dto/response.dto';
+import { FindManyResponseDto, ResponseDto } from '../common/dto/response.dto';
 
 @Injectable()
 export class ProductService {
